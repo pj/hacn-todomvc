@@ -5,6 +5,7 @@
   <ItemGroup>
     <Compile Include="Types.fs" />
     <Compile Include="Focus.fs" />
+    <Compile Include="Once.fs" />
     <Compile Include="Item.fs" />
     <Compile Include="Footer.fs" />
     <Compile Include="Header.fs" />
