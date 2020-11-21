@@ -20,14 +20,17 @@ type ItemEditEvent =
 | EditKey of string
 | EditChange of string
 
-type ItemState = {
-  StartFocus: bool
-  EditText: string
-}
+let valueFromRef ref = 
+  match ref.current with
+  | Some(element) -> 
+    let inputElement = box element :?> HTMLInputElement
+    inputElement.value
+  | None -> failwith "Ref not set"
 
 let Item : ItemProps -> ReactElement =
   react {
     let! props = Props
+    let sendEvent event = Call (fun _ -> props.SendEvent event)
     let! ref = Ref None
     let! itemEvent = RenderCapture(
       fun capture -> 
@@ -60,24 +63,12 @@ let Item : ItemProps -> ReactElement =
       )
 
     match itemEvent with 
-    | Toggled -> 
-      do! Call (fun () -> props.SendEvent (ToggleTodo props.Todo.Id))
-    | Delete ->
-      do! Call (fun () -> 
-        props.SendEvent (ClearTodo props.Todo.Id)
-      )
+    | Toggled -> do! sendEvent (ToggleTodo props.Todo.Id)
+    | Delete -> do! sendEvent (ClearTodo props.Todo.Id)
     | StartEdit ->
-      let! editState, setEditState = Get {
-        EditText = props.Todo.Title 
-        StartFocus = true
-      }
+      let! editText, setEditState = Get props.Todo.Title
+
       do! Once (Focus ref)
-      // do! Call (fun () -> 
-      //   if editState.StartFocus then
-      //     let inputElement = box ref.current :?> HTMLInputElement
-      //     inputElement.setSelectionRange (0, inputElement.value.Length)
-      //     inputElement.focus ()
-      // )
 
       let! itemEditEvent = RenderCapture (
         fun capture -> 
@@ -87,7 +78,7 @@ let Item : ItemProps -> ReactElement =
               Html.input [
                 prop.ref ref
                 prop.className "edit"
-                prop.value editState.EditText
+                prop.value editText
                 prop.type' "text"
                 prop.onBlur (fun _ -> capture EditBlured)
                 prop.onKeyDown (fun keyEvent -> capture (EditKey keyEvent.key))
@@ -101,33 +92,14 @@ let Item : ItemProps -> ReactElement =
           ]
       )
 
+      let currentText = valueFromRef ref
+
       match itemEditEvent with 
-      | EditBlured ->
-        match ref.current with
-        | Some(element) -> 
-          let inputElement = box element :?> HTMLInputElement
-          do! Call (fun () -> 
-            props.SendEvent (SaveTodo(props.Todo.Id, inputElement.value))
-          )
-        | None -> failwith "Ref not set"
+      | EditBlured -> do! sendEvent (SaveTodo(props.Todo.Id, currentText))
       | EditKey(key) ->
         match key with 
-        | "Enter" -> 
-          match ref.current with
-          | Some(element) -> 
-            let inputElement = box element :?> HTMLInputElement
-            do! Call (fun () -> 
-              props.SendEvent (SaveTodo(props.Todo.Id, inputElement.value))
-            )
-          | None -> failwith "Ref not set"
-        | "Escape" ->
-          match ref.current with
-          | Some(element) -> 
-            do! Call (fun () -> 
-              props.SendEvent (SaveTodo(props.Todo.Id, props.Todo.Title))
-            )
-          | None -> failwith "Ref not set"
+        | "Enter" -> do! sendEvent (SaveTodo(props.Todo.Id, currentText))
+        | "Escape" -> do! sendEvent (SaveTodo(props.Todo.Id, props.Todo.Title))
         | _ -> ()
-      | EditChange(value) ->
-          do! setEditState {editState with EditText = value; StartFocus = false}
+      | EditChange(value) -> do! setEditState value
   }
