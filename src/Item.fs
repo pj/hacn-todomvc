@@ -20,7 +20,7 @@ type ItemEditEvent =
 | EditKey of string
 | EditChange of string
 
-let valueFromRef ref = 
+let valueFromRef (ref: IRefValue<option<HTMLElement>>) = 
   match ref.current with
   | Some(element) -> 
     let inputElement = box element :?> HTMLInputElement
@@ -32,6 +32,7 @@ let Item : ItemProps -> ReactElement =
     let! props = Props
     let sendEvent event = Call (fun _ -> props.SendEvent event)
     let! ref = Ref None
+    let! _, start = Get ()
     let! itemEvent = RenderCapture(
       fun capture -> 
         Html.li [
@@ -99,7 +100,7 @@ let Item : ItemProps -> ReactElement =
       | EditKey(key) ->
         match key with 
         | "Enter" -> do! sendEvent (SaveTodo(props.Todo.Id, currentText))
-        | "Escape" -> do! sendEvent (SaveTodo(props.Todo.Id, props.Todo.Title))
+        | "Escape" -> do! start ()
         | _ -> ()
       | EditChange(value) -> do! setEditState value
   }
