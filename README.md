@@ -19,7 +19,7 @@ let Header : HeaderProps -> ReactElement =
     let! ref = Ref None
 
     // Rendering happens as a side effect of the sequence of operations and can
-    // capture values into the sequence of actions.
+    // capture values into the sequence.
     let! key = RenderCapture (
       fun capture ->
         // Elements are rendered using the Feliz library.
@@ -34,7 +34,7 @@ let Header : HeaderProps -> ReactElement =
         ]
     )
 
-    // Rather than a callback we can handle events as part of the sequence of operations and then call .
+    // Rather than a callback we can handle events as part of the sequence of operations and then return another operation or render something different.
     if key = "Enter" then
       match ref.current with
       | Some(element) -> 
