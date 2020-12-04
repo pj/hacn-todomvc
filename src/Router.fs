@@ -5,13 +5,12 @@ open Hacn.Types
 
 let HashRouter () = 
   Perform({ 
-    OperationType = NotCore;
     PreProcess = fun _ -> None;
     GetResult = fun _ operationState -> 
       match operationState with
       | Some(value) -> 
         let castVal: string = unbox value
-        InvokeContinue(None, None, None, castVal)
+        PerformContinue({Element = None; Effect = None; LayoutEffect = None}, castVal)
       | None -> 
         let hashChangeEffect rerender =
           let hashChangeListener (event: Browser.Types.Event) =
@@ -25,5 +24,5 @@ let HashRouter () =
             None
           )
           
-        InvokeContinue(None, Some(hashChangeEffect), None, "")
+        PerformContinue({Element = None; Effect = Some(hashChangeEffect); LayoutEffect = None}, "")
   })

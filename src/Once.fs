@@ -9,18 +9,17 @@ type OnceState = {
 
 let Once wrappedOperation = 
   Perform({ 
-    OperationType = NotCore;
     PreProcess = fun _ -> None;
     GetResult = fun capture operationState -> 
       match operationState with
       | Some(_) -> 
-        InvokeContinue(None, None, None, ())
+        PerformContinue({Element = None; Effect = None; LayoutEffect = None}, ())
       | None -> 
         match wrappedOperation with
         | Perform({GetResult = getResult}) ->
           let response = getResult capture operationState
           match response with 
-          | InvokeContinue(underlyingElement, underlyingEffectOpt, underlyingLayoutEffect, returnValue) -> 
+          | PerformContinue({ Element = underlyingElement; Effect = underlyingEffectOpt; LayoutEffect = underlyingLayoutEffect }, returnValue) -> 
             let wrapUnderlyingEffect rerender =
               let wrapRerender stateUpdater =
                 rerender (fun rerenderState -> 
@@ -35,10 +34,12 @@ let Once wrappedOperation =
                 rerender (fun _ -> Some ({UnderlyingState = None} :> obj))
                 None
 
-            InvokeContinue(
-              underlyingElement, 
-              Some(wrapUnderlyingEffect), 
-              underlyingLayoutEffect, 
+            PerformContinue(
+              { 
+                Element = underlyingElement
+                Effect = Some(wrapUnderlyingEffect)
+                LayoutEffect = underlyingLayoutEffect
+              },
               returnValue
             )
           | _ -> response

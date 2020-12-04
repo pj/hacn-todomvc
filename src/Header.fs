@@ -34,6 +34,7 @@ let Header : HeaderProps -> ReactElement =
           ]
         ]
     )
+
     if key = "Enter" then
       match ref.current with
       | Some(element) -> 

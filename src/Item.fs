@@ -32,7 +32,7 @@ let Item : ItemProps -> ReactElement =
     let! props = Props
     let sendEvent event = Call (fun _ -> props.SendEvent event)
     let! ref = Ref None
-    let! _, start = Get ()
+    let! _, start = State ()
     let! itemEvent = RenderCapture(
       fun capture -> 
         Html.li [
@@ -67,12 +67,11 @@ let Item : ItemProps -> ReactElement =
     | Toggled -> do! sendEvent (ToggleTodo props.Todo.Id)
     | Delete -> do! sendEvent (ClearTodo props.Todo.Id)
     | StartEdit ->
-      let! editText, setEditState = Get props.Todo.Title
+      let! editText, setEditState = State props.Todo.Title
 
       do! Once (Focus ref)
 
-      let! itemEditEvent = RenderCapture (
-        fun capture -> 
+      let! itemEditEvent = RenderCapture (fun capture -> 
           Html.li [
             prop.className "editing"
             prop.children [

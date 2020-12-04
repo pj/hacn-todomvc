@@ -7,7 +7,6 @@ open Browser.Types
 
 let Focus (ref: IRefValue<option<HTMLElement>>) = 
   Perform({ 
-    OperationType = NotCore;
     PreProcess = fun _ -> None;
     GetResult = fun _ __ -> 
       let focusLayoutEffect _ =
@@ -19,5 +18,5 @@ let Focus (ref: IRefValue<option<HTMLElement>>) =
         | None -> failwith "Ref not set"
         None
         
-      InvokeContinue(None, None, Some(focusLayoutEffect), ())
+      PerformContinue({Element = None; Effect = None; LayoutEffect = Some(focusLayoutEffect)}, ())
   })

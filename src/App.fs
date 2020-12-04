@@ -26,7 +26,7 @@ let App =
       else
         All
 
-    let! (state, setState) = Get {Todos = []}
+    let! (state, setState) = State {Todos = []}
 
     let activeTodoCount = List.sumBy (fun item -> if not item.Completed then 1 else 0) state.Todos
     let completedTodoCount = List.sumBy (fun item -> if item.Completed then 1 else 0) state.Todos
